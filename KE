@@ -1,0 +1,115 @@
+-- 1. INTRO
+pcall(function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/DBzgFdTC"))()
+end)
+
+task.wait(2) -- raise this if your intro runs longer
+
+-- 2. SERVICES
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- 3. GUI PARENT (tries hidden UI first, falls back to PlayerGui)
+local parent = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local old = parent:FindFirstChild("CombinedHub")
+if old then old:Destroy() end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "CombinedHub"
+gui.ResetOnSpawn = false
+gui.Parent = parent
+
+-- 4. MAIN FRAME
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 260, 0, 170)
+frame.Position = UDim2.new(0.5, -130, 0.5, -85)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+-- Title bar (drag handle)
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 36)
+title.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+title.BorderSizePixel = 0
+title.Text = "  Script Hub"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = frame
+Instance.new("UICorner", title).CornerRadius = UDim.new(0, 10)
+
+-- Close button
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0, 28, 0, 28)
+close.Position = UDim2.new(1, -32, 0, 4)
+close.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+close.Text = "X"
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+close.Font = Enum.Font.GothamBold
+close.TextSize = 14
+close.Parent = frame
+Instance.new("UICorner", close).CornerRadius = UDim.new(0, 6)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+-- 5. BUTTON MAKER
+local function makeButton(text, yPos, url)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -30, 0, 45)
+    btn.Position = UDim2.new(0, 15, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 15
+    btn.AutoButtonColor = true
+    btn.Parent = frame
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    btn.MouseButton1Click:Connect(function()
+        btn.Text = "Loading..."
+        local ok = pcall(function()
+            loadstring(game:HttpGet(url))()
+        end)
+        btn.Text = ok and (text .. " ✓") or (text .. " ✗ failed")
+        task.wait(2)
+        btn.Text = text
+    end)
+end
+
+makeButton("Unique Booster", 50, "https://pastebin.com/raw/sa12W9ER")
+makeButton("Fake Dupe", 107, "https://pastebin.com/raw/4mtMitJ7")
+
+-- 6. DRAGGING
+local dragging, dragStart, startPos
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
